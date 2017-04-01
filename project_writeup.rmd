@@ -107,10 +107,35 @@ cross_forest <- confusionMatrix(predict_forest, set_train2$classe)
 cross_forest
 ```
   
-We can clearly see that - at over 99% accurate - the Random Forest model significantly outperforms the Decision Tree model.  
-# Model Retraining
+We can clearly see that - at over 99% accurate - the Random Forest model significantly outperforms the Decision Tree model. So that's the one we will use going forward.
 
+# Model Retraining
+Now that we have cross-validated our models and selected the best one, let's retrain it using the entire training set. We will start by re-running the data cleaning we did for the individual training sets on the entire original set. 
+```{r, echo=TRUE, message=FALSE}
+# Removing variables that are predominately full of NA values
+majority_NA <- sapply(set_train, function(x) mean(is.na(x))) > 0.95
+set_train <- set_train[, majority_NA == FALSE]
+
+# Removing unneccesary variables for prediction:
+# (X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp)
+set_train <- set_train[, -(1:5)]
+
+# Excluding variables with near zero variance
+zero_var <- nearZeroVar(set_train)
+set_train <- set_train[, -zero_var]
+```
+  
+Now let's refit the *Random Forest* model using the entire training data set.
+```{r, echo=TRUE, message=FALSE}
+# Building the final model
+final_fit <- train(classe ~. , data = set_train, method = "rf", trControl = control_fit)
+```
 # Model Predictions
+```{r echo=TRUE,message=FALSE}
+final_prediction <- predict(final_fit, set_test)
+final_prediction
+```
+These final prediction values can be used to answer the Prediction Quiz section of the final project. 
 
 # References
 Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. [Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements.](http://groupware.les.inf.puc-rio.br/work.jsf?p1=10335) Proceedings of 21st Brazilian Symposium on Artificial Intelligence. *Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science.* , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
