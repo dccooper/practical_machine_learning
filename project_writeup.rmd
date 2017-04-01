@@ -1,0 +1,75 @@
+---
+title: "Practical Machine Leanring - Final"
+author: "David Cooper"
+date: "April 1, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.  
+
+# Preparation
+The training data for this project are available here:  
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:  
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. 
+
+```{r, echo=TRUE}
+library(caret) # Loading in the caret library
+
+# Importing the data sets
+set_train <- read.csv("data/pml-training.csv")
+set_test <- read.csv("data/pml-testing.csv")
+
+# Splitting the training set for cross validation
+set.seed(123)
+train_split <- createDataPartition(y = set_train$classe, p = 0.7, list = FALSE)
+set_train1 <- set_train[train_split, ]
+set_train2 <- set_train[-train_split, ]
+```
+### Reducing the dataset
+In order to make model building and prediction faster, we should reduce the dataset to the smallest possible size. We can do this by only accounting for the variables that we are interested in predicting. We can also exclude data that does not vary by much, and so would not be helpful in making any predictions.  
+```{r, echo=TRUE}
+# Removing variables that are predominately full of NA values
+majority_NA <- sapply(set_train1, function(x) mean(is.na(x))) > 0.95
+set_train1 <- set_train1[, majority_NA == FALSE]
+set_train2 <- set_train2[, majority_NA == FALSE]
+
+# Removing unneccesary variables for prediction:
+# (X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp)
+set_train1 <- set_train1[, -(1:5)]
+set_train2 <- set_train2[, -(1:5)]
+
+# Excluding variables with near zero variance
+zero_var <- nearZeroVar(set_train1)
+set_train1 <- set_train1[, -zero_var]
+set_train2 <- set_train2[, -zero_var]
+```
+  
+Removing these variables allows us to reduce the overall dataset from 160 variables to 54 - halving the amount of data our model has to take into account.
+
+# Model Building
+We will start with a model discussed frequently in the course, the *Random Forest* approach. 
+```{r echo=TRUE}
+library(randomForest)
+
+```
+
+
+# Model Evaluation
+
+# Model Retraining
+
+# Model Predictions
+
+# References
+Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. [Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements.](http://groupware.les.inf.puc-rio.br/work.jsf?p1=10335) Proceedings of 21st Brazilian Symposium on Artificial Intelligence. *Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science.* , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
+
+Read more: http://groupware.les.inf.puc-rio.br/har#ixzz4d0yFCAVA
