@@ -21,7 +21,7 @@ https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. 
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, message=FALSE}
 library(caret) # Loading in the caret library
 
 # Importing the data sets
@@ -56,14 +56,39 @@ set_train2 <- set_train2[, -zero_var]
 Removing these variables allows us to reduce the overall dataset from 160 variables to 54 - halving the amount of data our model has to take into account.
 
 # Model Building
-We will start with a model discussed frequently in the course, the *Random Forest* approach. 
-```{r echo=TRUE}
-library(randomForest)
+Let's begin with a more visual approach, the *Decision Tree Method* 
+.
+```{r, echo=TRUE, message=FALSE}
+library(rattle) # Importing the Rattle library
+library(rpart)
 
+set.seed(123)
+model_dt <- train(classe~., method = "rpart", data = set_train1)
+
+# Printing the final model
+print(model_dt$finalModel)
+
+# Visualizing the final model with Rattle
+fancyRpartPlot(model_dt$finalModel,cex=.5,under.cex=1,shadow.offset=0)
+
+```
+  
+We will next try a model discussed frequently in the course, the *Random Forest* approach. 
+```{r echo=TRUE, message=FALSE}
+library(randomForest) # Loading in the Random Forest library
+
+# Setting up, using a cross validation approach
+control_fit <- trainControl(method = "cv", number = 2)
+
+# Building the model
+model_fit <- train(classe ~. , data = set_train1, method = "rf", trControl = control_fit)
+
+model_fit$finalModel
 ```
 
 
 # Model Evaluation
+Now let's evaluate both of these models to see how well they perform in prediction. 
 
 # Model Retraining
 
