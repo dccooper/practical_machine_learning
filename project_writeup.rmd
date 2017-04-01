@@ -88,8 +88,26 @@ model_fit$finalModel
 
 
 # Model Evaluation
-Now let's evaluate both of these models to see how well they perform in prediction. 
+Now let's evaluate both of these models to see how well they perform in prediction using our cross validation dataset.
 
+```{r echo=TRUE, message=FALSE}
+# Testing the Decision Tree Model
+set.seed(123)
+predict_tree <- predict(model_dt, set_train2) 
+cross_tree <- confusionMatrix(predict_tree, set_train2$classe)
+cross_tree  
+```
+  
+Looking at these results, we can see that the Decision Tree model we used only gave us a ~60% accurate prediction on our cross-validation set. Let's try looking at the Random Forest model to see if it is any better.
+
+```{r, echo=TRUE, message=FALSE}
+# Testing the Random Forest model
+predict_forest <- predict(model_fit, set_train2)
+cross_forest <- confusionMatrix(predict_forest, set_train2$classe)
+cross_forest
+```
+  
+We can clearly see that - at over 99% accurate - the Random Forest model significantly outperforms the Decision Tree model.  
 # Model Retraining
 
 # Model Predictions
