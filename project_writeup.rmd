@@ -73,6 +73,7 @@ fancyRpartPlot(model_dt$finalModel,cex=.5,under.cex=1,shadow.offset=0)
 
 ```
   
+  
 We will next try a model discussed frequently in the course, the *Random Forest* approach. 
 ```{r echo=TRUE, message=FALSE}
 library(randomForest) # Loading in the Random Forest library
@@ -98,8 +99,10 @@ cross_tree <- confusionMatrix(predict_tree, set_train2$classe)
 cross_tree  
 ```
   
-Looking at these results, we can see that the Decision Tree model we used only gave us a ~60% accurate prediction on our cross-validation set. Let's try looking at the Random Forest model to see if it is any better.
-
+Looking at these results, we can see that the Decision Tree model we used only gave us a ~60% accurate prediction with a 50% in-sample error rate on our cross-validation set.  
+   
+Let's try looking at the Random Forest model to see if it is any better.  
+  
 ```{r, echo=TRUE, message=FALSE}
 # Testing the Random Forest model
 predict_forest <- predict(model_fit, set_train2)
@@ -107,10 +110,22 @@ cross_forest <- confusionMatrix(predict_forest, set_train2$classe)
 cross_forest
 ```
   
-We can clearly see that - at over 99% accurate - the Random Forest model significantly outperforms the Decision Tree model. So that's the one we will use going forward.
+We can clearly see that - at over 99% accurate with around a 0.3% in-sample error rate - the *Random Forest* model significantly outperforms the *Decision Tree* model. 
+
+### Testing for Out-of-Sample Error
+So it appears from our accuracy and in-sample error rate (1-Kappa), we have pretty good model. However, that could be a sign that we have overfitted it. Let's look at the out-of-sample error rate just to check.
+```{r echo=TRUE, message=FALSE}
+# Calculate the out-of-sample error
+OSE <- sum(predict_forest == set_train2$classe)/length(predict_forest)
+
+# Set out-of-sample error rate as a percentage
+OSE <- round(((1 - OSE)*100), digits = 2)
+```
+
+The out-of-sample error rate for this model is `r OSE`%, which is good because it shows we still have some wiggle room in our model. So after all this, it looks like the *Random Forest* Model **will** be the one we will use going forward.
 
 # Model Retraining
-Now that we have cross-validated our models and selected the best one, let's retrain it using the entire training set. We will start by re-running the data cleaning we did for the individual training sets on the entire original set. 
+Now that we have cross-validated our models and selected the best one, let's retrain the *Random Forest* model using the entire training set. We will start by re-running the data cleaning we did for the individual training sets on the entire original test dataset. 
 ```{r, echo=TRUE, message=FALSE}
 # Removing variables that are predominately full of NA values
 majority_NA <- sapply(set_train, function(x) mean(is.na(x))) > 0.95
@@ -131,11 +146,12 @@ Now let's refit the *Random Forest* model using the entire training data set.
 final_fit <- train(classe ~. , data = set_train, method = "rf", trControl = control_fit)
 ```
 # Model Predictions
+Let's apply our model to our test dataset. These final prediction values can be used to answer the Prediction Quiz section of the final project. 
 ```{r echo=TRUE,message=FALSE}
 final_prediction <- predict(final_fit, set_test)
 final_prediction
 ```
-These final prediction values can be used to answer the Prediction Quiz section of the final project. 
+
 
 # References
 Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. [Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements.](http://groupware.les.inf.puc-rio.br/work.jsf?p1=10335) Proceedings of 21st Brazilian Symposium on Artificial Intelligence. *Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science.* , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
